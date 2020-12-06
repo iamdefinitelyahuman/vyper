@@ -380,9 +380,9 @@ class FunctionNodeVisitor(VyperNodeVisitorBase):
                 try:
                     for n in node.body:
                         self.visit(n)
-                    # attach type information to allow non `int128` types in `vyper.parser.stmt`
-                    # this is a temporary solution until `vyper.parser` has been refactored
-                    node.target._type = type_._id
+                    # type information is applied directly because the scope is closed
+                    # prior to the call to  AnnotatingNodeVisitor
+                    node.target._metadata["type"] = type_
                     return
                 except (TypeMismatch, InvalidOperation) as exc:
                     for_loop_exceptions.append(exc)
