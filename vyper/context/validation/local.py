@@ -24,6 +24,7 @@ from vyper.context.types.meta.struct import StructDefinition
 from vyper.context.types.utils import get_type_from_annotation
 from vyper.context.types.value.boolean import BoolDefinition
 from vyper.context.types.value.numeric import Uint256Definition
+from vyper.context.validation.annotation import AnnotatingNodeVisitor
 from vyper.context.validation.base import VyperNodeVisitorBase
 from vyper.context.validation.utils import (
     get_common_types,
@@ -130,6 +131,7 @@ class FunctionNodeVisitor(VyperNodeVisitorBase):
         self.fn_node = fn_node
         self.namespace = namespace
         self.func = namespace["self"].get_member(fn_node.name, fn_node)
+        self.annotating_visitor = AnnotatingNodeVisitor(fn_node, namespace)
         namespace.update(self.func.arguments)
 
         if self.func.visibility is FunctionVisibility.INTERNAL:
@@ -170,6 +172,10 @@ class FunctionNodeVisitor(VyperNodeVisitorBase):
                 raise FunctionDeclarationException(
                     f"Missing or unmatched return statements in function '{fn_node.name}'", fn_node,
                 )
+
+    def visit(self, node):
+        super().visit(node)
+        self.annotating_visitor.visit(node)
 
     def visit_AnnAssign(self, node):
         name = node.get("target.id")
