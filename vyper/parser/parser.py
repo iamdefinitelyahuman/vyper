@@ -1,6 +1,7 @@
 from typing import Any, List, Optional, Tuple
 
 from vyper import ast as vy_ast
+from vyper.context.types.function import StateMutability
 from vyper.exceptions import (
     EventDeclarationException,
     FunctionDeclarationException,
@@ -160,8 +161,7 @@ def parse_tree_to_lll(global_ctx: GlobalContext) -> Tuple[LLLnode, LLLnode]:
         (
             True
             for i in global_ctx._defs
-            if FunctionSignature.from_definition(i, custom_structs=global_ctx._structs).mutability
-            == "payable"
+            if i._metadata["type"].mutability == StateMutability.PAYABLE
         ),
         False,
     )
